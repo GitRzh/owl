@@ -66,10 +66,19 @@ OWL/
 │   ├── chat.js              # Message rendering, streaming, send logic
 │   ├── emotion.js           # Camera lifecycle, face detection, smile challenge
 │   ├── tts-stt.js           # TTS playback, mic recording
-│   ├── face-api.min.js      # Bundled face-api.js
+│   ├── face-api.min.js      # Bundled face-api.js (v0.22.2)
 │   └── models/              # Pre-trained face model weights (bundled)
+│       ├── tiny_face_detector_model-shard1               # TinyFaceDetector weights
+│       ├── tiny_face_detector_model-weights_manifest.json
+│       ├── face_expression_model-shard1                  # FaceExpressionNet weights
+│       └── face_expression_model-weights_manifest.json
 │
-└── requirements.txt
+├── requirements.txt
+│
+│  ── generated on first run ──
+│
+├── backend/embeddings/      # ChromaDB vector store (built from docs/ PDFs)
+└── backend/__pycache__/     # Python bytecode cache
 ```
 
 ---
@@ -151,7 +160,7 @@ No face data or expression scores leave your device.
 
 ---
 
-## Caution
+## Caution :8
 
 - OWL is not a crisis service. If you or someone you know is in immediate danger, contact emergency services or a crisis line in your region.
 - Your conversations are not stored or transmitted. Everything clears when you close the tab. Do not commit your `.env` key to version control.
@@ -161,4 +170,4 @@ No face data or expression scores leave your device.
 
 ---
 
-*A real person who knows you will always reach you in ways a program simply cannot.*
+*A real person who knows you well, will always reach you in ways a program simply cannot :)*
