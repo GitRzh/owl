@@ -1,24 +1,24 @@
 # OWL — On-call Wise Listener
 
-> A local mental wellness companion that listens, responds with warmth, and gently nudges you toward a smile — powered by a RAG-backed language model, real-time face emotion detection, and voice I/O.
+> A local mental wellness companion that listens, responds with warmth, and reads how you're actually doing — through your words, your voice, and your face.
 
 ---
 
 ## What it does
 
-You open OWL and start talking. That's it. There's no form to fill out, no profile to create. OWL reads what you type (or say), reads your face if you let it, and responds like something that genuinely cares about how you're doing.
+You open OWL and start talking. No profile, no setup. It reads what you type or say, picks up on your facial expression if the camera is on, and responds like something that genuinely pays attention.
 
-Behind that simplicity is a layered system. The language model pulls from a curated set of clinical mental health documents to ground its responses in real guidance. It watches the emotional weight of your messages over time and, when it senses a sustained low mood, quietly introduces a smile challenge — a small, optional moment of levity that asks you to hold a real smile for three seconds. No pressure. You can skip it.
+The language model is backed by a set of clinical mental health documents, so its responses have some grounding. It tracks the emotional weight of your messages over time. If things stay heavy, it may suggest a smile challenge — a camera-based moment where you hold a real smile for three seconds. Low-stakes, optional, skippable.
 
 **What it can do:**
-- Hold a flowing, context-aware conversation using a RAG-backed LLM (Groq / Llama)
-- Detect your facial emotions in real time using face-api.js (runs fully in the browser)
-- Score the emotional weight of your messages server-side and nudge toward positivity when needed
-- Run a smile challenge: camera-based, hold-to-confirm, with a live meter
-- Speak its responses aloud in a male or female voice via Edge TTS
-- Transcribe your voice input using Whisper (Groq-hosted)
+- Hold a flowing, context-aware conversation using a RAG-backed LLM
+- Route heavier or escalated messages to a larger model automatically
+- Detect your facial expressions in real time via face-api.js (runs entirely in the browser)
+- Score the emotional weight of your messages server-side and gently nudge toward a smile challenge when needed
+- Speak responses aloud in a male or female voice via Edge TTS
+- Transcribe voice input using Whisper (Groq-hosted)
 - Summarize long conversations automatically to stay within context limits
-- Block jailbreak attempts using both regex and semantic similarity detection
+- Block jailbreak attempts using regex and semantic similarity detection
 
 ---
 
@@ -27,13 +27,13 @@ Behind that simplicity is a layered system. The language model pulls from a cura
 | Layer | Tools |
 |---|---|
 | Backend | Python, FastAPI, Uvicorn |
-| Language model | Groq API (Llama 3.3 70B) |
+| Language models | Groq API — `llama-3.1-8b-instant` (default), `llama-3.3-70b-versatile` (escalated messages) |
 | RAG pipeline | LangChain, ChromaDB, HuggingFace Embeddings (`all-MiniLM-L6-v2`) |
 | Document loader | PyPDF (LangChain) |
 | Face detection | face-api.js (`TinyFaceDetector` + `FaceExpressionNet`) |
 | TTS | edge-tts (`en-US-JennyNeural`, `en-US-BrianNeural`) |
 | STT | Groq Whisper (`whisper-large-v3-turbo`) |
-| Jailbreak detection | Semantic cosine similarity via HuggingFace embeddings |
+| Jailbreak detection | Cosine similarity via HuggingFace embeddings |
 | Frontend | Vanilla HTML / CSS / JS |
 
 ---
@@ -44,12 +44,12 @@ Behind that simplicity is a layered system. The language model pulls from a cura
 OWL/
 │
 ├── backend/
-│   ├── main.py              # FastAPI app — all routes (/chat, /tts, /transcribe, /summarize)
-│   ├── chat.py              # Prompt building, streaming response, mood scoring
-│   ├── rag.py               # Document ingestion, embedding, ChromaDB retrieval
+│   ├── main.py              # FastAPI app — /chat, /tts, /transcribe, /summarize
+│   ├── chat.py              # Prompt building, streaming, mood scoring, model routing
+│   ├── rag.py               # PDF ingestion, embedding, ChromaDB retrieval
 │   ├── emotion.py           # Face score parsing, dominant + secondary emotion extraction
-│   ├── jailbreak.py         # Semantic jailbreak detection using pre-computed intent embeddings
-│   └── docs/                # Clinical PDFs indexed by RAG (see Sources below)
+│   ├── jailbreak.py         # Semantic jailbreak detection
+│   └── docs/                # Clinical PDFs indexed by RAG
 │       ├── qpr_guide.pdf
 │       ├── samhsa_crisis_guidelines.pdf
 │       ├── nih_prolonged_grief.pdf
@@ -60,48 +60,35 @@ OWL/
 │       └── nih_loneliness_isolation.pdf
 │
 ├── frontend/
-│   ├── index.html           # Full UI — landing + chat page
-│   ├── style.css            # All styles (dark theme, animations, smile meter)
-│   ├── app.js               # Global state, config, dot wave background, block transition
-│   ├── chat.js              # Message rendering, streaming, mood tracking, send logic
-│   ├── emotion.js           # Camera lifecycle, face detection loop, smile challenge flow
-│   ├── tts-stt.js           # TTS playback and mic recording
-│   ├── face-api.min.js      # Bundled face-api.js library
-│   └── models/              # Pre-trained face detection model weights
-│       ├── tiny_face_detector_model-shard1
-│       ├── tiny_face_detector_model-weights_manifest.json
-│       ├── face_expression_model-shard1
-│       └── face_expression_model-weights_manifest.json
+│   ├── index.html
+│   ├── style.css
+│   ├── app.js               # Global state, config, background animations
+│   ├── chat.js              # Message rendering, streaming, send logic
+│   ├── emotion.js           # Camera lifecycle, face detection, smile challenge
+│   ├── tts-stt.js           # TTS playback, mic recording
+│   ├── face-api.min.js      # Bundled face-api.js
+│   └── models/              # Pre-trained face model weights (bundled)
 │
-├── requirements.txt
-└── README.md
+└── requirements.txt
 ```
 
 ---
 
 ## Setup
 
-**0. Prerequisites**
+**Prerequisites:** Python 3.10 or 3.11, and a Groq API key from [console.groq.com](https://console.groq.com).
 
-- Python 3.10 or 3.11 (recommended)
-- Node is not required — the frontend is plain HTML/JS
-- A Groq API key — get one free at [console.groq.com](https://console.groq.com)
-
-**1. Clone the repo**
+**1. Clone and enter the repo**
 ```bash
 git clone https://github.com/GitRzh/owl.git
 cd owl
 ```
 
-**2. Create and activate a virtual environment**
+**2. Create a virtual environment**
 ```bash
 python -m venv venv
-
-# Windows
-venv\Scripts\activate
-
-# Mac / Linux
-source venv/bin/activate
+source venv/bin/activate       # Mac / Linux
+venv\Scripts\activate          # Windows
 ```
 
 **3. Install dependencies**
@@ -109,11 +96,9 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-On slower machines, the torch CPU wheel can take a few minutes. That's normal.
-
 **4. Add your API key**
 
-Create a `.env` file in the `backend/` folder:
+Create `backend/.env`:
 ```
 GROQ_API_KEY=your_key_here
 ```
@@ -124,72 +109,55 @@ cd backend
 python main.py
 ```
 
-On first run, OWL will build embeddings from the PDFs in `docs/` and save them to `backend/embeddings/`. This only happens once — subsequent starts load from disk.
+First run builds embeddings from the PDFs in `docs/` — saved to `backend/embeddings/` and skipped on every run after.
 
 **6. Open the frontend**
 
-Open `frontend/index.html` directly in your browser. No server needed for the frontend.
-
-If the camera or mic don't respond, make sure you're opening the file over `http://` (use a local server like `python -m http.server 5500` inside `frontend/`) rather than `file://`, since browsers restrict camera access on `file://` origins.
-
----
-
-## How the Smile Challenge works
-
-OWL tracks a rolling weighted average of the emotional weight of your messages (scored server-side, no extra API calls). After enough turns, if your mood score stays below a threshold, OWL gently suggests the smile challenge.
-
-When it fires:
-1. Your camera turns on (with your permission)
-2. A vertical smile meter appears alongside the feed
-3. OWL asks you to give it a real smile
-4. Hold the smile above the threshold for 3 seconds — the ring fills as you hold it
-5. On success, OWL responds to what it saw in your face
-
-You can cancel at any time by clicking the camera icon. OWL won't push it again for a while.
+Serve `frontend/` with any static server:
+```bash
+cd frontend
+python -m http.server 5500
+```
+Then open `http://localhost:5500`. Opening `index.html` via `file://` will block camera and mic access.
 
 ---
 
 ## RAG Document Sources
 
-The clinical knowledge base powering OWL's responses is drawn from publicly available mental health materials:
+Clinical grounding for OWL's responses is drawn from publicly available materials:
 
-- **QPR Gatekeeper Training Guide** — QPR Institute. Suicide risk recognition and intervention techniques for non-clinical settings.
-- **SAMHSA Crisis Guidelines** — Substance Abuse and Mental Health Services Administration. Evidence-based protocols for behavioral health crisis response.
-- **NIH: Prolonged Grief** — National Institute of Mental Health (NIMH). Clinical overview of prolonged grief disorder, symptoms, and treatment pathways.
-- **NIH: Complicated Grief** — National Institutes of Health. Research summary on complicated grief and its distinction from standard bereavement.
-- **NIH: Anger and Aggression** — National Institutes of Health. Overview of anger dysregulation, contributing factors, and intervention approaches.
-- **NIH: Anger Treatment** — National Institutes of Health. Evidence-based approaches to anger management and therapy.
-- **NIH: Stress and Coping** — National Institute of Mental Health (NIMH). Guidance on stress recognition and healthy coping strategies.
-- **NIH: Loneliness and Isolation** — National Institutes of Health. Research on the health impacts of social isolation and approaches to connection.
+- **QPR Gatekeeper Training Guide** — QPR Institute. Suicide risk recognition and intervention for non-clinical settings.
+- **SAMHSA Crisis Guidelines** — Substance Abuse and Mental Health Services Administration. Evidence-based behavioral health crisis response protocols.
+- **NIH: Prolonged Grief** — NIMH. Clinical overview of prolonged grief disorder and treatment pathways.
+- **NIH: Complicated Grief** — NIH. Research on complicated grief and its distinction from standard bereavement.
+- **NIH: Anger and Aggression** — NIH. Anger dysregulation, contributing factors, and intervention approaches.
+- **NIH: Anger Treatment** — NIH. Evidence-based anger management and therapy approaches.
+- **NIH: Stress and Coping** — NIMH. Stress recognition and healthy coping strategies.
+- **NIH: Loneliness and Isolation** — NIH. Health impacts of social isolation and approaches to connection.
 
-These documents are used solely for retrieval-augmented generation. OWL does not reproduce or redistribute their content.
+Used solely for retrieval-augmented generation. No content is redistributed.
 
 ---
 
 ## Face Detection Credits
 
-Face detection and expression recognition run entirely in the browser using:
+Face detection and expression recognition run entirely in your browser:
 
 - **face-api.js** by Vincent Mühler — [github.com/justadudewhohacks/face-api.js](https://github.com/justadudewhohacks/face-api.js) (MIT License)
-- **TinyFaceDetector model** — a lightweight face detection architecture trained for real-time browser inference, bundled with face-api.js
-- **FaceExpressionNet model** — a MobileNet-based expression classifier trained on AffectNet and FER+, bundled with face-api.js
+- **TinyFaceDetector** — lightweight real-time face detection model, bundled with face-api.js
+- **FaceExpressionNet** — MobileNet-based expression classifier trained on AffectNet and FER+, bundled with face-api.js
 
-No face data, images, or expression scores leave your device. Detection runs locally on every frame.
-
----
-
-## Notes
-
-- OWL does not store your chat history between sessions. Everything lives in memory and clears when you close the tab.
-- The `.env` file is in `.gitignore` by default — don't commit your API key.
-- If RAG returns no results (empty `docs/` folder), OWL still works — it just won't have clinical grounding for its responses.
-- The jailbreak detector reuses the same embeddings model loaded for RAG, so there's no extra model download.
+No face data or expression scores leave your device.
 
 ---
 
-## Warning
+## Caution
 
-OWL is a personal project, not a clinical tool. It does not assess risk, provide diagnoses, or replace professional support in any form. The language model can be wrong. The emotion detection can be wrong. Treat everything it says as a starting point for reflection, not as advice.
+- OWL is not a crisis service. If you or someone you know is in immediate danger, contact emergency services or a crisis line in your region.
+- Your conversations are not stored or transmitted. Everything clears when you close the tab. Do not commit your `.env` key to version control.
+- The language model can produce incorrect or unhelpful responses, especially during escalated moments. It is not a substitute for a trained professional.
+- Emotion detection is probabilistic — a misread face will affect the tone of a response.
+- If `docs/` is empty, OWL still runs but without any clinical grounding.
 
 ---
 
