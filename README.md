@@ -170,4 +170,4 @@ No face data or expression scores leave your device.
 
 ---
 
-*A real person who knows you well, will always reach you in ways a program simply cannot :)*
+*A real person who knows you well, will always reach you in ways a program simply cannot.*
