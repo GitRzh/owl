@@ -3,7 +3,9 @@
 // ════════════════════════════════════════════════════
 // CONFIG
 // ════════════════════════════════════════════════════
-const API_BASE      = 'http://localhost:8000';
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:8000'
+  : 'https://rzhface-owl.hf.space';
 const SMILE_MIN     = 0.62;
 const SMILE_HOLD_MS = 3000;
 const DETECT_MS     = 180;
