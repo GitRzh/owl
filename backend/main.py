@@ -85,6 +85,16 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
+
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+app.mount("/static", StaticFiles(directory="../frontend"), name="frontend")
+
+@app.get("/")
+async def root():
+    return FileResponse("../frontend/index.html")
+    
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
